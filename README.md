@@ -78,3 +78,6 @@ Best experienced in Chrome or Edge for full Web Speech API support.
 This project is licensed under the MIT License.
 
 
+
+<img width="2556" height="1347" alt="Screenshot 2025-07-12 205931" src="https://github.com/user-attachments/assets/3199c082-26af-41ae-85e6-993e64faee48" />
+<img width="2554" height="1347" alt="Screenshot 2025-07-12 205847" src="https://github.com/user-attachments/assets/4810d17a-01ea-4462-b4e7-6099894f1139" />
