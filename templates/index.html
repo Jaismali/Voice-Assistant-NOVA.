@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nova - AI Chatbot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0d0d0d;
+      --text-color: #fff;
+      --card-bg: #1e1e1e;
+      --input-bg: #2a2a2a;
+      --highlight: #343541;
+    }
+
+    body.light {
+      --bg-color: #f1f1f1;
+      --text-color: #111;
+      --card-bg: #ffffff;
+      --input-bg: #e5e5e5;
+      --highlight: #f0f0f0;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body, html {
+      height: 100%;
+      width: 100%;
+      font-family: 'Roboto', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .app {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .sidebar {
+      width: 280px;
+      background-color: #1c1c1c;
+      padding: 20px 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.3s ease;
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 100;
+    }
+
+    .sidebar.hidden {
+      transform: translateX(-100%);
+    }
+
+    .menu-toggle {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 110;
+      font-size: 26px;
+      background: none;
+      border: none;
+      color: var(--text-color);
+      cursor: pointer;
+    }
+
+    .chat-history {
+      flex-grow: 1;
+      overflow-y: auto;
+      margin-bottom: 15px;
+    }
+
+    .chat-history div {
+      background: var(--highlight);
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      position: relative;
+    }
+
+    .chat-history div .close {
+      position: absolute;
+      right: 10px;
+      top: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      color: white;
+    }
+
+    .user select {
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      width: 100%;
+      font-size: 0.9rem;
+    }
+
+    .main {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      margin-left: 60px;
+      width: 100%;
+    }
+
+    .top-controls {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+      z-index: 10;
+    }
+
+    .icon-button {
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: var(--text-color);
+      cursor: pointer;
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      flex-grow: 1;
+      padding: 70px 30px 10px 30px;
+      overflow-y: auto;
+      gap: 20px;
+    }
+
+    .greeting {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .greeting h1 {
+      font-size: 2rem;
+    }
+
+    .greeting p {
+      color: #999;
+      font-size: 1rem;
+    }
+
+    .suggestions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 15px;
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .suggestions button {
+      background: var(--input-bg);
+      border: none;
+      padding: 12px;
+      color: var(--text-color);
+      font-size: 0.95rem;
+      border-radius: 8px;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .suggestions button:hover {
+      background: #3b3b3b;
+    }
+
+    .chat-response {
+      background: var(--input-bg);
+      padding: 12px;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+
+    .chat-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background-color: var(--input-bg);
+      padding: 12px 16px;
+      margin: 5px 25px 15px 25px;
+      border-radius: 10px;
+      position: relative;
+      z-index: 101;
+    }
+
+    .chat-bar textarea {
+      flex-grow: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-color);
+      font-size: 1rem;
+      resize: none;
+      outline: none;
+      height: 40px;
+    }
+
+    .chat-bar button,
+    .chat-bar select {
+      background-color: #6200ee;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .bottom-controls {
+      display: flex;
+      justify-content: flex-end;
+      padding: 0 30px 0 30px;
+      z-index: 102;
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    .bottom-controls button {
+      background-color: #6200ee;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    #tsparticles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 100vw;
+      z-index: -1;
+    }
+  </style>
+</head>
+<body>
+  <div id="tsparticles"></div>
+
+  <div class="app">
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+
+    <div class="sidebar hidden" id="sidebar">
+      <div>
+        <h2>Chat History</h2>
+        <div class="chat-history" id="chatHistory"></div>
+      </div>
+      <div class="user">
+        <select id="userSelect">
+          <option value="guest1">Guest 1</option>
+          <option value="guest2">Guest 2</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="top-controls">
+        <button class="icon-button" onclick="toggleTheme()">🌙</button>
+      </div>
+
+      <div class="main-content" id="mainContent">
+        <div class="greeting">
+          <h1>Hello there!</h1>
+          <p>How can I help you today?</p>
+        </div>
+        <div class="suggestions" id="suggestions">
+          <button onclick="fillSuggestion('Tell me a joke')">Tell me a joke</button>
+          <button onclick="fillSuggestion('What is AI?')">What is AI?</button>
+          <button onclick="fillSuggestion('What’s the weather today?')">What’s the weather today?</button>
+          <button onclick="fillSuggestion('Explain quantum computing')">Explain quantum computing</button>
+        </div>
+      </div>
+
+      <div class="bottom-controls">
+        <button onclick="clearChat()">Clear Chat</button>
+      </div>
+
+      <div class="chat-bar">
+        <textarea id="userInput" placeholder="Send a message..."></textarea>
+        <button onclick="startListening()">Speak</button>
+        <button onclick="sendMessage()">➤</button>
+        <select id="languageSelect">
+          <option value="en-US">EN</option>
+          <option value="hi-IN">HI</option>
+          <option value="fr-FR">FR</option>
+          <option value="es-ES">ES</option>
+        </select>
+        <button onclick="stopVoice()">⛔</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("hidden");
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("light");
+      const btn = document.querySelector(".top-controls .icon-button");
+      btn.textContent = document.body.classList.contains("light") ? "🌞" : "🌙";
+    }
+
+    function clearChat() {
+      const responses = document.querySelectorAll(".chat-response");
+      responses.forEach(el => el.remove());
+      window.speechSynthesis.cancel();
+    }
+
+    function fillSuggestion(text) {
+      document.getElementById("userInput").value = text;
+      sendMessage();
+    }
+
+    function sendMessage() {
+      const userInput = document.getElementById("userInput").value;
+      const language = document.getElementById("languageSelect").value;
+      if (!userInput.trim()) return;
+
+      const userBubble = document.createElement("div");
+      userBubble.className = "chat-response";
+      userBubble.textContent = "You: " + userInput;
+      document.getElementById("mainContent").appendChild(userBubble);
+
+      fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userInput, language: language })
+      })
+      .then(res => res.json())
+      .then(data => {
+        const botReply = data.reply;
+        const botBubble = document.createElement("div");
+        botBubble.className = "chat-response";
+        botBubble.textContent = "Bot: " + botReply;
+        document.getElementById("mainContent").appendChild(botBubble);
+
+        const speech = new SpeechSynthesisUtterance(botReply);
+        speech.lang = language;
+        const voices = window.speechSynthesis.getVoices();
+        speech.voice = voices.find(v => v.lang === language) || null;
+        window.speechSynthesis.speak(speech);
+
+        document.getElementById("userInput").value = "";
+
+        const chatHistory = document.createElement("div");
+        chatHistory.textContent = userInput.substring(0, 30) + "...";
+        const closeBtn = document.createElement("span");
+        closeBtn.textContent = "×";
+        closeBtn.className = "close";
+        closeBtn.onclick = () => chatHistory.remove();
+        chatHistory.appendChild(closeBtn);
+        document.getElementById("chatHistory").appendChild(chatHistory);
+      });
+    }
+
+    function stopVoice() {
+      window.speechSynthesis.cancel();
+    }
+
+    function startListening() {
+      const language = document.getElementById("languageSelect").value;
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Speech recognition not supported in this browser.");
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = language;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.start();
+
+      recognition.onresult = function (event) {
+        const text = event.results[0][0].transcript;
+        document.getElementById("userInput").value = text;
+        sendMessage();
+      };
+
+      recognition.onerror = function (event) {
+        console.error("Speech recognition error:", event.error);
+      };
+    }
+  </script>
+</body>
+</html>
+
